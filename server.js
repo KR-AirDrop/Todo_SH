@@ -5,3 +5,8 @@ const app = express();
 app.listen(8080, function () {
   console.log("listening on 8080");
 });
+
+// get ('경로', function(요청, 응답){} )
+app.get("/hello", function (req, res) {
+  res.send("hello!");
+});
