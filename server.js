@@ -10,3 +10,7 @@ app.listen(8080, function () {
 app.get("/hello", function (req, res) {
   res.send("hello!");
 });
+
+app.get("/beauty", function (req, res) {
+  res.send("뷰티 용품 페이지 입니다. 😄");
+});
