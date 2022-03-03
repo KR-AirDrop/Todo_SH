@@ -68,3 +68,17 @@ app.delete("/delete", (req, res) => {
     res.status(200).send("삭제성공");
   });
 });
+
+app.get("/detail/:id", (req, res) => {
+  db.collection("post").findOne(
+    { _id: parseInt(req.params.id) },
+    (err, result) => {
+      console.log(result);
+      if (!result) {
+        res.sendFile(__dirname + "/error.html");
+      } else {
+        res.render("detail.ejs", { data: result });
+      }
+    }
+  );
+});
