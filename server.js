@@ -31,24 +31,33 @@ app.get("/write", (req, res) => {
 // 어떤 사람이 /add경로로 POST요청을 하면 ... ~를 실행해주세요.
 app.post("/add", (req, res) => {
   res.send("전송완료");
-  console.log(req.body.todo);
-  console.log(req.body.date);
 
-  // DB에 저장!
-  db.collection("post").insertOne(
-    { todo: req.body.todo, date: req.body.date },
-    (err, 결과) => {
-      console.log("저장완료");
-    }
-  );
+  db.collection("counter").findOne({ name: "게시물 갯수" }, (err, result) => {
+    var totalPost = result.totalPost;
+    // DB에 저장!
+    db.collection("post").insertOne(
+      { _id: totalPost + 1, todo: req.body.todo, date: req.body.date },
+      (err, result) => {
+        console.log("저장완료");
+        // 총 게시물 갯수 +1 해줘야함
+        db.collection("counter").updateOne(
+          { name: "게시물 갯수" },
+          { $inc: { totalPost: 1 } },
+          (err, result) => {
+            if (err) return console.log(err);
+          }
+        );
+      }
+    );
+  });
 });
 
 app.get("/list", (req, res) => {
   // DB에 저장된 post라는 Collection안의 ~ 데이터를 꺼내주세용
   db.collection("post")
     .find()
-    .toArray((err, 결과) => {
-      console.log(결과);
-      res.render("list.ejs", { posts: 결과 });
+    .toArray((err, result) => {
+      console.log(result);
+      res.render("list.ejs", { posts: result });
     });
 });
