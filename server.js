@@ -1,13 +1,17 @@
 const express = require("express");
 const res = require("express/lib/response");
 const app = express();
-
 app.use(express.urlencoded({ extended: true }));
 
-// listen (파라미터1, 파라미터2), 파라미터1 : 서버 띄울 포트번호, 파라미터2 : 띄운 후 실행할 코드
-app.listen(8080, () => {
-  console.log("listening on 8080");
-});
+const MongoClient = require("mongodb").MongoClient;
+MongoClient.connect(
+  "mongodb+srv://hyuktodo:chltjdgur1@cluster0.g0bua.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+  (error, client) => {
+    app.listen(8080, () => {
+      console.log("listening on 8080");
+    });
+  }
+);
 
 // get ('경로', function(요청, 응답){} )
 app.get("/", (req, res) => {
