@@ -57,7 +57,14 @@ app.get("/list", (req, res) => {
   db.collection("post")
     .find()
     .toArray((err, result) => {
-      console.log(result);
       res.render("list.ejs", { posts: result });
     });
+});
+
+app.delete("/delete", (req, res) => {
+  req.body._id = parseInt(req.body._id); // 정수로 변환
+  db.collection("post").deleteOne(req.body, (err, result) => {
+    console.log("삭제완료");
+    res.status(200).send("삭제성공");
+  });
 });
