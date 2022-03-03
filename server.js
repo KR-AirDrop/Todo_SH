@@ -2,8 +2,8 @@ const express = require("express");
 const res = require("express/lib/response");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
-
 const MongoClient = require("mongodb").MongoClient;
+app.set("view engine", "ejs");
 
 var db;
 MongoClient.connect(
@@ -41,4 +41,14 @@ app.post("/add", (req, res) => {
       console.log("저장완료");
     }
   );
+});
+
+app.get("/list", (req, res) => {
+  // DB에 저장된 post라는 Collection안의 ~ 데이터를 꺼내주세용
+  db.collection("post")
+    .find()
+    .toArray((err, 결과) => {
+      console.log(결과);
+      res.render("list.ejs", { posts: 결과 });
+    });
 });
