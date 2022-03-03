@@ -13,10 +13,6 @@ MongoClient.connect(
 
     db = client.db("hyuktodo");
 
-    db.collection("post").insertOne({ 이름: "성혁", 나이: 29 }, (err, 결과) => {
-      console.log("저장완료");
-    });
-
     app.listen(8080, () => {
       console.log("listening on 8080");
     });
@@ -37,5 +33,12 @@ app.post("/add", (req, res) => {
   res.send("전송완료");
   console.log(req.body.todo);
   console.log(req.body.date);
+
   // DB에 저장!
+  db.collection("post").insertOne(
+    { todo: req.body.todo, date: req.body.date },
+    (err, 결과) => {
+      console.log("저장완료");
+    }
+  );
 });
