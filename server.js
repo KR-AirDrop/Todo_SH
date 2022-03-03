@@ -7,14 +7,10 @@ app.listen(8080, function () {
 });
 
 // get ('경로', function(요청, 응답){} )
-app.get("/hello", function (req, res) {
-  res.send("hello!");
-});
-
-app.get("/beauty", function (req, res) {
-  res.send("뷰티 용품 페이지 입니다. 😄");
-});
-
 app.get("/", function (req, res) {
   res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/write", function (req, res) {
+  res.sendFile(__dirname + "/write.html");
 });
