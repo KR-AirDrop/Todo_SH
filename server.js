@@ -9,6 +9,9 @@ app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
 require("dotenv").config();
 
+//bcrypt 선언
+const bcrypt = require("bcrypt");
+
 var db;
 MongoClient.connect(process.env.DB_URL, (error, client) => {
   if (error) return console.log(error);
@@ -125,7 +128,7 @@ passport.use(
           return done(null, false, {
             message: "존재하지 않는 아이디입니다.",
           });
-        if (inputPW == result.pw) {
+        if (bcrypt.compareSync(inputPW, result.pw)) {
           return done(null, result);
         } else {
           return done(null, false, { message: "비밀번호가 틀렸습니다." });
@@ -148,8 +151,9 @@ passport.deserializeUser(function (아이디, done) {
 });
 
 app.post("/register", function (req, res) {
+  const encryptedPW = bcrypt.hashSync(req.body.pw, 10); //비밀번호 암호화
   db.collection("login").insertOne(
-    { id: req.body.id, pw: req.body.pw },
+    { id: req.body.id, pw: encryptedPW },
     function (err, result) {
       res.redirect("/");
     }
