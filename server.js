@@ -7,20 +7,18 @@ const methodOverride = require("method-override");
 app.use(methodOverride("_method"));
 app.set("view engine", "ejs");
 app.use("/public", express.static("public"));
+require("dotenv").config();
 
 var db;
-MongoClient.connect(
-  "mongodb+srv://hyuktodo:chltjdgur1@cluster0.g0bua.mongodb.net/hyuktodo?retryWrites=true&w=majority",
-  (error, client) => {
-    if (error) return console.log(error);
+MongoClient.connect(process.env.DB_URL, (error, client) => {
+  if (error) return console.log(error);
 
-    db = client.db("hyuktodo");
+  db = client.db("hyuktodo");
 
-    app.listen(8080, () => {
-      console.log("listening on 8080");
-    });
-  }
-);
+  app.listen(process.env.PORT, () => {
+    console.log("listening on 8080");
+  });
+});
 
 // get ('경로', function(요청, 응답){} )
 app.get("/", (req, res) => {
@@ -72,6 +70,30 @@ app.get("/list", (req, res) => {
     .find()
     .toArray((err, result) => {
       res.render("list.ejs", { posts: result });
+    });
+});
+
+// find는 게시물 수가 많아지면 느려짐...ㅠㅠ > 미리 제목으로 정렬해두고(indexing) binary search 사용
+app.get("/search", (req, res) => {
+  var 검색조건 = [
+    {
+      $search: {
+        index: "todoSearch",
+        text: {
+          query: req.query.value,
+          path: ["todo", "date"], // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+        },
+      },
+    },
+    { $sort: { _id: 1 } },
+    { $limit: 100 },
+    { $project: { _id: 0, todo: 1, date: 1 } },
+  ];
+  db.collection("post")
+    .aggregate(검색조건)
+    .toArray(function (err, result) {
+      console.log(result);
+      res.render("search.ejs", { posts: result });
     });
 });
 

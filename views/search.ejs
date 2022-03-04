@@ -17,14 +17,14 @@
     />
     <link rel="stylesheet" href="/public/main.css" />
 
-    <title>Todo list</title>
+    <title>Search list</title>
   </head>
   <body>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
 
     <%- include('nav.html') %>
     <div class="container">
-      <h2 class="text-center ml-2 my-3">서버에서 가져온 할 일 리스트</h2>
+      <h2 class="text-center ml-2 my-3">검색된 할 일 리스트</h2>
 
       <div class="container input-group mb-2">
         <input class="form-control" id="search-input" />
@@ -42,6 +42,10 @@
         });
       </script>
 
+      <% if (!posts || !posts.length) { %>
+      <h4>검색 결과가 없습니다.</h4>
+      <%} else { %>
+
       <ul class="list-group">
         <% for (var i = 0; i < posts.length; i++){ %>
         <li class="list-group-item">
@@ -53,6 +57,7 @@
         </li>
         <% } %>
       </ul>
+      <% } %>
     </div>
 
     <!-- jQuery 도움을 받아 Ajax사용 -->
