@@ -25,79 +25,6 @@ app.get("/", (req, res) => {
   res.render("index.ejs");
 });
 
-app.get("/write", (req, res) => {
-  res.render("write.ejs");
-});
-
-app.get("/edit/:id", (req, res) => {
-  db.collection("post").findOne(
-    { _id: parseInt(req.params.id) },
-    function (err, result) {
-      if (!result) {
-        res.render("error.ejs");
-      } else {
-        res.render("edit.ejs", { post: result });
-      }
-    }
-  );
-});
-
-app.get("/list", (req, res) => {
-  // DB에 저장된 post라는 Collection안의 ~ 데이터를 꺼내주세용
-  db.collection("post")
-    .find()
-    .toArray((err, result) => {
-      res.render("list.ejs", { posts: result });
-    });
-});
-
-// find는 게시물 수가 많아지면 느려짐...ㅠㅠ > 미리 제목으로 정렬해두고(indexing) binary search 사용
-app.get("/search", (req, res) => {
-  var 검색조건 = [
-    {
-      $search: {
-        index: "todoSearch",
-        text: {
-          query: req.query.value,
-          path: ["todo", "date"], // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
-        },
-      },
-    },
-    { $sort: { _id: 1 } },
-    { $limit: 100 },
-    { $project: { _id: 0, todo: 1, date: 1 } },
-  ];
-  db.collection("post")
-    .aggregate(검색조건)
-    .toArray(function (err, result) {
-      console.log(result);
-      res.render("search.ejs", { posts: result });
-    });
-});
-
-app.get("/detail/:id", (req, res) => {
-  db.collection("post").findOne(
-    { _id: parseInt(req.params.id) },
-    (err, result) => {
-      if (!result) {
-        res.render(__dirname + "/views/error.ejs");
-      } else {
-        res.render("detail.ejs", { data: result });
-      }
-    }
-  );
-});
-
-app.put("/edit", function (req, res) {
-  db.collection("post").updateOne(
-    { _id: parseInt(req.body.id) },
-    { $set: { todo: req.body.todo, date: req.body.date } },
-    function (err, result) {
-      res.redirect("/list");
-    }
-  );
-});
-
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
@@ -113,15 +40,33 @@ app.get("/login", function (req, res) {
   res.render("login.ejs");
 });
 
+app.get("/signup", function (req, res) {
+  res.render("signup.ejs");
+});
+
+app.get("/error", function (req, res) {
+  res.render("error.ejs");
+});
+
 app.post(
   "/login",
   passport.authenticate("local", {
-    failureRedirect: "/fail",
+    failureRedirect: "/error",
   }),
   function (req, res) {
-    res.redirect("/");
+    res.redirect("/list");
   }
 );
+
+app.get("/list", logined, (req, res) => {
+  // DB에 저장된 post라는 Collection안의 ~ 데이터를 꺼내주세용
+  db.collection("post")
+    .find({ writer: req.user._id })
+    .toArray((err, result) => {
+      console.log(result);
+      res.render("list.ejs", { posts: result });
+    });
+});
 
 app.get("/mypage", logined, function (req, res) {
   console.log(req.user);
@@ -135,6 +80,33 @@ function logined(req, res, next) {
     res.render("login.ejs");
   }
 }
+
+app.get("/write", logined, (req, res) => {
+  res.render("write.ejs");
+});
+
+app.get("/edit/:id", logined, (req, res) => {
+  db.collection("post").findOne(
+    { _id: parseInt(req.params.id) },
+    function (err, result) {
+      if (!result) {
+        res.render("error.ejs");
+      } else {
+        res.render("edit.ejs", { post: result });
+      }
+    }
+  );
+});
+
+app.put("/edit", function (req, res) {
+  db.collection("post").updateOne(
+    { _id: parseInt(req.body.id) },
+    { $set: { todo: req.body.todo, date: req.body.date } },
+    function (err, result) {
+      res.redirect("/list");
+    }
+  );
+});
 
 // 아이디 비번 인증하는 세부 코드
 passport.use(
@@ -179,16 +151,14 @@ app.post("/register", function (req, res) {
   db.collection("login").insertOne(
     { id: req.body.id, pw: req.body.pw },
     function (err, result) {
-      res.redirect("/list");
+      res.redirect("/");
     }
   );
 });
 
-// 어떤 사람이 /add경로로 POST요청을 하면 ... ~를 실행해주세요.
 app.post("/add", (req, res) => {
   db.collection("counter").findOne({ name: "게시물 갯수" }, (err, result) => {
     var totalPost = result.totalPost;
-    // DB에 저장!
     db.collection("post").insertOne(
       {
         _id: totalPost + 1,
@@ -197,7 +167,6 @@ app.post("/add", (req, res) => {
         writer: req.user._id,
       },
       (err, result) => {
-        // 총 게시물 갯수 +1 해줘야함
         db.collection("counter").updateOne(
           { name: "게시물 갯수" },
           { $inc: { totalPost: 1 } },
@@ -220,4 +189,42 @@ app.delete("/delete", (req, res) => {
     if (err) console.lig(err);
     res.status(200).send("삭제성공");
   });
+});
+
+app.get("/detail/:id", logined, (req, res) => {
+  db.collection("post").findOne(
+    { _id: parseInt(req.params.id) },
+    (err, result) => {
+      if (!result) {
+        res.render(__dirname + "/views/error.ejs");
+      } else {
+        res.render("detail.ejs", { data: result });
+      }
+    }
+  );
+});
+
+// find는 게시물 수가 많아지면 느려짐...ㅠㅠ > 미리 제목으로 정렬해두고(indexing) binary search 사용
+app.get("/search", logined, (req, res) => {
+  var 검색조건 = [
+    {
+      $search: {
+        index: "todoSearch",
+        text: {
+          query: req.query.value,
+          path: ["todo", "date"], // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+        },
+      },
+    },
+    { $match: { writer: req.user._id } },
+    { $sort: { _id: 1 } },
+    { $limit: 100 },
+    { $project: { _id: 1, todo: 1, date: 1 } },
+  ];
+  db.collection("post")
+    .aggregate(검색조건)
+    .toArray(function (err, result) {
+      console.log(result);
+      res.render("search.ejs", { posts: result });
+    });
 });

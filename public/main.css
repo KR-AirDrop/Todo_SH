@@ -1,7 +1,13 @@
 h4 {
   font-family: "nanumsquare";
+  display: inline;
+  margin: 0;
 }
 
 a {
   color: black;
+}
+
+.content {
+  min-height: calc(100vh - 200px);
 }
