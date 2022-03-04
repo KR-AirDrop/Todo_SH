@@ -21,73 +21,73 @@
   </head>
   <body>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <div class="bg-light p-2 text-dark">
+      <%- include('nav.html') %>
+      <div class="content">
+        <div class="container">
+          <h2 class="text-center ml-2 my-3">검색된 할 일 리스트</h2>
 
-    <%- include('nav.html') %>
-    <div class="content">
-      <div class="container">
-        <h2 class="text-center ml-2 my-3">검색된 할 일 리스트</h2>
+          <div class="container input-group mb-2">
+            <input class="form-control" id="search-input" />
+            <button class="input-group-append btn btn-dark" id="search">
+              검색
+            </button>
+          </div>
 
-        <div class="container input-group mb-2">
-          <input class="form-control" id="search-input" />
-          <button class="input-group-append btn btn-dark" id="search">
-            검색
-          </button>
+          <!-- GET 요청으로 서버에 데이터 전달 -->
+          <!-- url?데이터이름=데이터값 -->
+          <script>
+            $("#search").click(function () {
+              var searchInput = $("#search-input").val();
+              window.location.replace("/search?value=" + searchInput);
+            });
+          </script>
+
+          <% if (!posts || !posts.length) { %>
+          <h4>검색 결과가 없습니다.</h4>
+          <%} else { %>
+
+          <ul class="list-group">
+            <% for (var i = 0; i < posts.length; i++){ %>
+            <li class="list-group-item">
+              <a href="/detail/<%=posts[i]._id%>">
+                <h4><%= posts[i].todo %></h4></a
+              >
+              <button
+                class="btn btn-danger float-right delete"
+                data-id="<%= posts[i]._id%>"
+              >
+                삭제
+              </button>
+              <p>마감 날짜 : <%= posts[i].date %></p>
+            </li>
+            <% } %>
+          </ul>
+          <% } %>
         </div>
 
-        <!-- GET 요청으로 서버에 데이터 전달 -->
-        <!-- url?데이터이름=데이터값 -->
+        <!-- jQuery 도움을 받아 Ajax사용 -->
         <script>
-          $("#search").click(function () {
-            var searchInput = $("#search-input").val();
-            window.location.replace("/search?value=" + searchInput);
+          $(".delete").click(function (e) {
+            var id = e.target.dataset.id;
+            var nowClick = $(this);
+            $.ajax({
+              method: "DELETE",
+              url: "/delete",
+              data: { _id: id },
+            })
+              .done((result) => {
+                nowClick.parent("li").fadeOut();
+              })
+              .fail((xhr, code, err) => {
+                console.log(xhr, textStatus, errorThrown);
+              });
           });
         </script>
-
-        <% if (!posts || !posts.length) { %>
-        <h4>검색 결과가 없습니다.</h4>
-        <%} else { %>
-
-        <ul class="list-group">
-          <% for (var i = 0; i < posts.length; i++){ %>
-          <li class="list-group-item">
-            <a href="/detail/<%=posts[i]._id%>">
-              <h4><%= posts[i].todo %></h4></a
-            >
-            <button
-              class="btn btn-danger float-right delete"
-              data-id="<%= posts[i]._id%>"
-            >
-              삭제
-            </button>
-            <p>마감 날짜 : <%= posts[i].date %></p>
-          </li>
-          <% } %>
-        </ul>
-        <% } %>
       </div>
 
-      <!-- jQuery 도움을 받아 Ajax사용 -->
-      <script>
-        $(".delete").click(function (e) {
-          var id = e.target.dataset.id;
-          var nowClick = $(this);
-          $.ajax({
-            method: "DELETE",
-            url: "/delete",
-            data: { _id: id },
-          })
-            .done((result) => {
-              nowClick.parent("li").fadeOut();
-            })
-            .fail((xhr, code, err) => {
-              console.log(xhr, textStatus, errorThrown);
-            });
-        });
-      </script>
+      <%- include('footer.html') %>
     </div>
-
-    <%- include('footer.html') %>
-
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->

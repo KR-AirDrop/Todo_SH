@@ -13,32 +13,34 @@
     <title>Login page</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Todo App</a>
-      </div>
-    </nav>
+    <div class="bg-light p-2 text-dark">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/">Todo App</a>
+        </div>
+      </nav>
 
-    <div class="content">
-      <h4 class="container mt-4"><strong>로그인</strong></h4>
+      <div class="content">
+        <h3 class="container mt-4"><strong>로그인</strong></h3>
 
-      <div class="container mt-3">
-        <form action="/login" method="POST">
-          <div class="form-group">
-            <label>ID</label>
-            <input type="text" class="form-control" name="id" />
-          </div>
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" class="form-control" name="pw" />
-          </div>
-          <button type="submit" class="btn btn-outline-primary">
-            로그인하기
-          </button>
-        </form>
+        <div class="container mt-3">
+          <form action="/login" method="POST">
+            <div class="form-group">
+              <label>ID</label>
+              <input type="text" class="form-control" name="id" />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" class="form-control" name="pw" />
+            </div>
+            <button type="submit" class="btn btn-outline-primary">
+              로그인하기
+            </button>
+          </form>
+        </div>
       </div>
+      <%- include('footer.html') %>
     </div>
-    <%- include('footer.html') %>
 
     <script
       src="https://code.jquery.com/jquery-3.4.1.slim.min.js"

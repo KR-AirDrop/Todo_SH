@@ -51,10 +51,14 @@ app.get("/error", function (req, res) {
   res.render("error.ejs");
 });
 
+app.get("/loginerror", function (req, res) {
+  res.render("loginerror.ejs");
+});
+
 app.post(
   "/login",
   passport.authenticate("local", {
-    failureRedirect: "/error",
+    failureRedirect: "/loginerror",
   }),
   function (req, res) {
     res.redirect("/list");
@@ -69,11 +73,6 @@ app.get("/list", logined, (req, res) => {
       console.log(result);
       res.render("list.ejs", { posts: result });
     });
-});
-
-app.get("/mypage", logined, function (req, res) {
-  console.log(req.user);
-  res.render("mypage.ejs", { user: req.user });
 });
 
 function logined(req, res, next) {
