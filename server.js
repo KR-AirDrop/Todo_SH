@@ -42,28 +42,6 @@ app.get("/edit/:id", (req, res) => {
   );
 });
 
-// 어떤 사람이 /add경로로 POST요청을 하면 ... ~를 실행해주세요.
-app.post("/add", (req, res) => {
-  db.collection("counter").findOne({ name: "게시물 갯수" }, (err, result) => {
-    var totalPost = result.totalPost;
-    // DB에 저장!
-    db.collection("post").insertOne(
-      { _id: totalPost + 1, todo: req.body.todo, date: req.body.date },
-      (err, result) => {
-        // 총 게시물 갯수 +1 해줘야함
-        db.collection("counter").updateOne(
-          { name: "게시물 갯수" },
-          { $inc: { totalPost: 1 } },
-          (err, result) => {
-            if (err) return console.log(err);
-            else res.redirect("/list");
-          }
-        );
-      }
-    );
-  });
-});
-
 app.get("/list", (req, res) => {
   // DB에 저장된 post라는 Collection안의 ~ 데이터를 꺼내주세용
   db.collection("post")
@@ -97,14 +75,6 @@ app.get("/search", (req, res) => {
     });
 });
 
-app.delete("/delete", (req, res) => {
-  req.body._id = parseInt(req.body._id); // 정수로 변환
-  db.collection("post").deleteOne(req.body, (err, result) => {
-    console.log("삭제완료");
-    res.status(200).send("삭제성공");
-  });
-});
-
 app.get("/detail/:id", (req, res) => {
   db.collection("post").findOne(
     { _id: parseInt(req.params.id) },
@@ -131,6 +101,7 @@ app.put("/edit", function (req, res) {
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
+const req = require("express/lib/request");
 
 app.use(
   session({ secret: "seonchoi", resave: true, saveUninitialized: false })
@@ -201,5 +172,52 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (아이디, done) {
   db.collection("login").findOne({ id: 아이디 }, function (err, result) {
     done(null, result);
+  });
+});
+
+app.post("/register", function (req, res) {
+  db.collection("login").insertOne(
+    { id: req.body.id, pw: req.body.pw },
+    function (err, result) {
+      res.redirect("/list");
+    }
+  );
+});
+
+// 어떤 사람이 /add경로로 POST요청을 하면 ... ~를 실행해주세요.
+app.post("/add", (req, res) => {
+  db.collection("counter").findOne({ name: "게시물 갯수" }, (err, result) => {
+    var totalPost = result.totalPost;
+    // DB에 저장!
+    db.collection("post").insertOne(
+      {
+        _id: totalPost + 1,
+        todo: req.body.todo,
+        date: req.body.date,
+        writer: req.user._id,
+      },
+      (err, result) => {
+        // 총 게시물 갯수 +1 해줘야함
+        db.collection("counter").updateOne(
+          { name: "게시물 갯수" },
+          { $inc: { totalPost: 1 } },
+          (err, result) => {
+            if (err) return console.log(err);
+            else res.redirect("/list");
+          }
+        );
+      }
+    );
+  });
+});
+
+app.delete("/delete", (req, res) => {
+  req.body._id = parseInt(req.body._id); // 정수로 변환
+
+  var delData = { _id: req.body._id, writer: req.user._id };
+  db.collection("post").deleteOne(delData, (err, result) => {
+    console.log("삭제완료");
+    if (err) console.lig(err);
+    res.status(200).send("삭제성공");
   });
 });
