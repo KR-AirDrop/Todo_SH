@@ -55,6 +55,10 @@ app.get("/loginerror", function (req, res) {
   res.render("loginerror.ejs");
 });
 
+app.get("/duplicateId", function (req, res) {
+  res.render("duplicateId.ejs");
+});
+
 app.post(
   "/login",
   passport.authenticate("local", {
@@ -151,12 +155,34 @@ passport.deserializeUser(function (아이디, done) {
 
 app.post("/register", function (req, res) {
   const encryptedPW = bcrypt.hashSync(req.body.pw, 10); //비밀번호 암호화
-  db.collection("login").insertOne(
-    { id: req.body.id, pw: encryptedPW },
-    function (err, result) {
-      res.redirect("/");
+  db.collection("login").findOne({ id: req.body.id }, function (err, result) {
+    console.log(result);
+    if (result == null) {
+      db.collection("login").insertOne(
+        { id: req.body.id, pw: encryptedPW },
+        function (err, result) {
+          res.redirect("/");
+        }
+      );
+    } else {
+      res.redirect("/duplicateId");
     }
-  );
+  });
+});
+
+app.post("/register", function (req, res) {
+  db.collection("login").findOne({ id: req.body.id }, function (err, result) {
+    if (result.id == req.body.id) {
+      res.send("중복된 아이디입니다.");
+    } else {
+      db.collection("login").insertOne(
+        { id: req.body.id, pw: req.body.pw },
+        function (err, result) {
+          res.redirect("/list");
+        }
+      );
+    }
+  });
 });
 
 app.post("/add", (req, res) => {
