@@ -233,6 +233,40 @@ app.get("/detail/:id", logined, (req, res) => {
   );
 });
 
+app.get("/upload", logined, (req, res) => {
+  res.render("upload.ejs");
+});
+
+let multer = require("multer");
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/image");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+  fileFilter: function (req, file, callback) {
+    var ext = path.extname(file.originalname);
+    if (ext !== ".png" && ext !== ".jpg" && ext !== ".jpeg") {
+      return callback(new Error("PNG, JPG만 업로드하세요"));
+    }
+    callback(null, true);
+  },
+  limits: {
+    fileSize: 1024 * 1024,
+  },
+});
+
+app.get("/image/:imageName", logined, function (요청, 응답) {
+  응답.sendFile(__dirname + "/public/image/" + 요청.params.imageName);
+});
+
+var upload = multer({ storage: storage });
+
+app.post("/upload", upload.single("profile"), function (req, res) {
+  res.send("완료");
+});
+
 // find는 게시물 수가 많아지면 느려짐...ㅠㅠ > 미리 제목으로 정렬해두고(indexing) binary search 사용
 app.get("/search", logined, (req, res) => {
   var 검색조건 = [
